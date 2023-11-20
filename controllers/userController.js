@@ -56,10 +56,58 @@ const updateUserByAdmin = asyncHandler(async (req, res) => {
     });
 });
 
+const updateUserAddress = asyncHandler(async (req, res) => {
+    const { userId } = req.user;
+    if (!req.body.address) throw new Error('Missing address value');
+    const response = await User
+        .findByIdAndUpdate(userId, { $push: { address: req.body.address } }, { new: true })
+        .select('-refreshToken -password -role');
+    res.status(200).json({
+        success: response ? true : false,
+        updateUser: response ? response : 'Something went wrong'
+    });
+});
+
+const updateCart = asyncHandler(async (req, res) => {
+    const { userId } = req.user;
+    const { productId, quantity, color } = req.body;
+    if (!productId || !quantity || !color) throw new Error('Missing input values');
+    const user = await User.findById(userId);
+    const alreadyProduct = user?.cart.find(el => el.product.toString() === productId);
+    if (alreadyProduct) {
+        if (alreadyProduct.color === color) {
+            const response = await User
+                .updateOne(
+                    { cart: { $elemMatch: alreadyProduct } },
+                    { $set: { 'cart.$.quantity': quantity } },
+                    { new: true }
+                );
+            res.status(200).json({
+                success: response ? true : false,
+                updateUser: response ? response : 'Something went wrong'
+            });
+        } else {
+            const response = await User.findByIdAndUpdate(userId, { $push: { cart: { product: productId, quantity, color } } }, { new: true });
+            res.status(200).json({
+                success: response ? true : false,
+                updateUser: response ? response : 'Something went wrong'
+            });
+        }
+    } else {
+        const response = await User.findByIdAndUpdate(userId, { $push: { cart: { product: productId, quantity, color } } }, { new: true });
+        res.status(200).json({
+            success: response ? true : false,
+            updateUser: response ? response : 'Something went wrong'
+        });
+    }
+});
+
 module.exports = {
     getAllUser,
     getCurrentUser,
     deleteUser,
     updateUser,
-    updateUserByAdmin
+    updateUserByAdmin,
+    updateUserAddress,
+    updateCart
 };

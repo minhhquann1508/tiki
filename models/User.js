@@ -29,11 +29,12 @@ const UserSchema = new mongoose.Schema({
         type: String,
         default: 'user',
     },
-    cart: {
-        type: Array,
-        default: []
-    },
-    address: [{ type: mongoose.Schema.ObjectId, ref: 'Address' }],
+    cart: [{
+        product: { type: mongoose.Types.ObjectId, ref: 'Product' },
+        quantity: Number,
+        color: String
+    }],
+    address: String,
     wishlist: [{ type: mongoose.Schema.ObjectId, ref: 'Product' }],
     isBlocked: {
         type: Boolean,

@@ -1,7 +1,7 @@
 const router = require('express').Router();
 const { verifyAccessToken, isAdmin } = require('../middleware/verifyToken');
-const { createProduct, getProductById, getAllProduct, updateProduct, deleteProduct, rating } = require('../controllers/productController');
-
+const { createProduct, getProductById, getAllProduct, updateProduct, deleteProduct, rating, uploadProductImage } = require('../controllers/productController');
+const uploader = require('../config/cloudinary.config');
 router
     .route('/')
     .get(getAllProduct)
@@ -10,6 +10,10 @@ router
 router
     .route('/rating')
     .put(verifyAccessToken, rating);
+
+router
+    .route('/uploadImage/:id')
+    .put(verifyAccessToken, isAdmin, uploader.array('images', 10), uploadProductImage);
 
 router
     .route('/:id')
